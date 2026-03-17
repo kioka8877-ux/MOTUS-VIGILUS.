@@ -10,8 +10,8 @@ MOTUS-VIGILUS extrait l'animation d'une vidéo `.mp4` et la convertit en fichier
 
 | Frégate | Script | Rôle | Input | Output |
 |---------|--------|------|-------|--------|
-| **U-ALPHA** (L'Auspex) | `core/motus_extract.py` | Extraction + Transmutation | `.mp4` | `.npz` |
-| **U-GAMMA** (La Forge) | `core/motus_forge.py` | Manifestation FBX | `.npz` + `.blend` | `.fbx` |
+| **U-ALPHA** (L'Auspex) | `U-ALPHA/codebase/motus_extract.py` | Extraction + Transmutation | `.mp4` | `.npz` |
+| **U-GAMMA** (La Forge) | `U-GAMMA/codebase/motus_forge.py` | Manifestation FBX | `.npz` + `.blend` | `.fbx` |
 
 ## Pipeline
 
@@ -21,10 +21,16 @@ MOTUS-VIGILUS extrait l'animation d'une vidéo `.mp4` et la convertit en fichier
 
 ## Quick Start (Google Colab)
 
-1. Ouvrir `notebooks/MOTUS_VIGILUS_Colab.ipynb` dans Google Colab
+### Étape 1 — Frégate U-ALPHA
+1. Ouvrir `U-ALPHA/MOTUS_VIGILUS_ALPHA.ipynb` dans Google Colab
 2. Uploader une vidéo `.mp4`
-3. Sélectionner FPS cible (30/60/120), Lissage, Root Motion
-4. Lancer → Télécharger `MOTUS_VIGILUS.fbx`
+3. Configurer (FPS, Lissage, Root Motion)
+4. Lancer → Télécharger les fichiers `.npz`
+
+### Étape 2 — Frégate U-GAMMA
+1. Ouvrir `U-GAMMA/MOTUS_VIGILUS_GAMMA.ipynb` dans Google Colab
+2. Uploader les fichiers `.npz` de l'étape 1
+3. Lancer → Télécharger `MOTUS_VIGILUS.fbx`
 
 ## Spécifications
 
@@ -40,12 +46,20 @@ MOTUS-VIGILUS extrait l'animation d'une vidéo `.mp4` et la convertit en fichier
 
 ```
 MOTUS-VIGILUS/
-├── core/              # Scripts Python (Frégates)
-├── templates/         # Template Blender R15
-├── notebooks/         # Notebook Colab
-├── docs/              # Documentation technique
-├── inputs/            # Vidéos sources
-└── outputs/           # Fichiers .npz et .fbx
+├── docs/              # Documentation technique (PRD, Roadmap, State)
+├── U-ALPHA/           # Frégate U-ALPHA — Extraction (MP4 → NPZ)
+│   ├── codebase/      # Script motus_extract.py
+│   ├── inputs/        # Vidéos .mp4 sources
+│   ├── outputs/       # Fichiers .npz extraits
+│   └── *.ipynb        # Notebook Colab U-ALPHA
+├── U-GAMMA/           # Frégate U-GAMMA — Forge (NPZ → FBX)
+│   ├── codebase/      # Script motus_forge.py
+│   ├── inputs/        # Fichiers .npz (depuis U-ALPHA)
+│   ├── outputs/       # Fichiers .fbx forgés
+│   ├── templates/     # Template Blender R15
+│   └── *.ipynb        # Notebook Colab U-GAMMA
+├── README.md
+└── requirements.txt
 ```
 
 ## Doctrine
