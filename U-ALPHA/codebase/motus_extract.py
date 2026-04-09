@@ -47,6 +47,15 @@ REST_VECTORS = {
 
 SMOOTH_PRESETS = {"faible": (5, 2), "moyen": (7, 3), "brutal": (15, 3)}
 
+# Bones extremites sujets aux artefacts MediaPipe — lissage renforce systematiquement
+EXTREMITY_BONE_NAMES = {
+    "LeftLowerArm", "LeftHand",
+    "RightLowerArm", "RightHand",
+    "LeftLowerLeg", "LeftFoot",
+    "RightLowerLeg", "RightFoot",
+}
+EXTREMITY_INDICES = [i for i, name in enumerate(BONE_NAMES) if name in EXTREMITY_BONE_NAMES]
+
 
 def ensure_model():
     if not os.path.exists(MODEL_PATH):
@@ -108,15 +117,39 @@ def smooth_array(data, window, poly, is_quat=False):
     return out
 
 
-def temporal_upscale(data, src_fps, tgt_fps):
-    if tgt_fps <= src_fps or len(data) < 2:
+def smooth_extremities(rots, window, poly=3):
+    """Passe de lissage renforcee sur les bones extremites (pieds, mains, avant-bras)."""
+    # window doit etre impair et >= poly+2
+    if window % 2 == 0:
+        window += 1
+    window = max(window, poly + 2)
+    if len(rots) < window:
+        return rots
+    rots_flat = rots.reshape(len(rots), -1).copy()
+    for bi in EXTREMITY_INDICES:
+        col_s, col_e = bi * 4, bi * 4 + 4
+        rots_flat[:, col_s:col_e] = savgol_filter(
+            rots_flat[:, col_s:col_e], window, poly, axis=0
+        )
+    result = rots_flat.reshape(-1, len(BONE_NAMES), 4)
+    norms = np.linalg.norm(result, axis=-1, keepdims=True)
+    return result / (norms + 1e-12)
+
+
+def temporal_resample(data, src_fps, tgt_fps):
+    """Ré-échantillonnage temporel : gère upscaling ET downscaling via interpolation cubique."""
+    if src_fps == tgt_fps or len(data) < 2:
         return data
     n_src = len(data)
-    n_tgt = int(n_src * tgt_fps / src_fps)
-    t_s, t_t = np.linspace(0, 1, n_src), np.linspace(0, 1, n_tgt)
+    n_tgt = int(round(n_src * tgt_fps / src_fps))
+    if n_tgt < 2:
+        return data
+    t_s = np.linspace(0, 1, n_src)
+    t_t = np.linspace(0, 1, n_tgt)
     shape = data.shape[1:]
     flat = data.reshape(n_src, -1)
-    return interp1d(t_s, flat, axis=0, kind="cubic")(t_t).reshape(n_tgt, *shape)
+    kind = "cubic" if n_src >= 4 else "linear"
+    return interp1d(t_s, flat, axis=0, kind=kind)(t_t).reshape(n_tgt, *shape)
 
 
 def fill_gaps(tracks, max_gap=10):
@@ -218,16 +251,26 @@ def main():
         raw = np.array([frames[i] for i in indices])
         root_pos = raw[:, :3]
         rots = raw[:, 3:].reshape(len(raw), 15, 4)
+
         if args.no_root_motion:
             root_pos = np.zeros_like(root_pos)
+
+        # Lissage principal (tous les bones)
         root_pos = smooth_array(root_pos, win, poly)
         rots = smooth_array(rots.reshape(len(rots), -1), win, poly).reshape(-1, 15, 4)
         norms = np.linalg.norm(rots, axis=-1, keepdims=True)
         rots = rots / (norms + 1e-12)
-        root_pos = temporal_upscale(root_pos, src_fps, args.fps)
-        rots = temporal_upscale(rots.reshape(len(rots), -1), src_fps, args.fps).reshape(-1, 15, 4)
+
+        # Lissage renforce sur les extremites (window = max(win*2, 15))
+        ext_win = max(win * 2 + 1, 15)
+        rots = smooth_extremities(rots, ext_win)
+
+        # Ré-échantillonnage temporel (upscaling ET downscaling corrigé)
+        root_pos = temporal_resample(root_pos, src_fps, args.fps)
+        rots = temporal_resample(rots.reshape(len(rots), -1), src_fps, args.fps).reshape(-1, 15, 4)
         norms = np.linalg.norm(rots, axis=-1, keepdims=True)
         rots = rots / (norms + 1e-12)
+
         out_path = os.path.join(args.output, f"motus_core_P{pid}.npz")
         np.savez(
             out_path,
