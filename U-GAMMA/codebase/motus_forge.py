@@ -100,7 +100,7 @@ if missing:
 print(f"[U-GAMMA] {len(bone_map)}/{len(bone_names)} bones mappés")
 
 # ── Identifier le bone racine pour root_position ───────────────────────────
-ROOT_CANDIDATES = ["Root", "root", "HumanoidRootPart", "Hips", "hips", "Pelvis", "LowerTorso"]
+ROOT_CANDIDATES = ["HumanoidRootNode", "Root", "root", "HumanoidRootPart", "Hips", "hips", "Pelvis", "LowerTorso"]
 root_bone = None
 for c in ROOT_CANDIDATES:
     root_bone = find_bone(armature, c)

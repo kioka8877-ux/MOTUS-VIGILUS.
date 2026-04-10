@@ -38,11 +38,21 @@ BONE_DEFS = [
 ]
 
 REST_VECTORS = {
-    "LowerTorso": [0, 1, 0], "UpperTorso": [0, 1, 0], "Head": [0, 1, 0],
-    "LeftUpperArm": [-1, 0, 0], "LeftLowerArm": [-1, 0, 0], "LeftHand": [-1, 0, 0],
-    "RightUpperArm": [1, 0, 0], "RightLowerArm": [1, 0, 0], "RightHand": [1, 0, 0],
-    "LeftUpperLeg": [0, -1, 0], "LeftLowerLeg": [0, -1, 0], "LeftFoot": [0, 0, 1],
-    "RightUpperLeg": [0, -1, 0], "RightLowerLeg": [0, -1, 0], "RightFoot": [0, 0, 1],
+    "LowerTorso":    [ 0.000,  1.000,  0.000],
+    "UpperTorso":    [ 0.000,  1.000,  0.000],
+    "Head":          [ 0.000,  1.000,  0.000],
+    "LeftUpperArm":  [-0.589, -0.808,  0.000],
+    "LeftLowerArm":  [-0.547, -0.809,  0.213],
+    "LeftHand":      [-0.547, -0.809,  0.213],
+    "RightUpperArm": [ 0.589, -0.808,  0.000],
+    "RightLowerArm": [ 0.547, -0.809,  0.213],
+    "RightHand":     [ 0.547, -0.809,  0.213],
+    "LeftUpperLeg":  [-0.137, -0.990, -0.032],
+    "LeftLowerLeg":  [-0.118, -0.990, -0.072],
+    "LeftFoot":      [ 0.000,  0.000,  1.000],
+    "RightUpperLeg": [ 0.137, -0.990, -0.032],
+    "RightLowerLeg": [ 0.118, -0.990, -0.072],
+    "RightFoot":     [ 0.000,  0.000,  1.000],
 }
 
 SMOOTH_PRESETS = {"faible": (5, 2), "moyen": (7, 3), "brutal": (15, 3)}
